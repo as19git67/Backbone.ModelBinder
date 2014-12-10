@@ -29,7 +29,6 @@
 
     Backbone.ModelBinder = function () {
         _.bindAll.apply(_, [this].concat(_.functions(this)));
-        this.initializeComponentBinders();
     };
 
     // Static setter for class level options
@@ -44,17 +43,6 @@
     Backbone.ModelBinder.Constants.ViewToModel = 'ViewToModel';
 
     _.extend(Backbone.ModelBinder.prototype, {
-        // throw away all additionally added component binders and re-add just the component binders from this module
-        initializeComponentBinders: function () {
-            this._componentBinders = [];
-        },
-
-        // add an additional component binder that must derive from Backbone.ComponentBinder
-        addComponentBinder: function (componentBinder) {
-            if (componentBinder instanceof Backbone.ComponentBinder) {
-                this._componentBinders.push(componentBinder);
-            }
-        },
 
         bind: function (model, rootEl, attributeBindings, options) {
             this.unbind();
@@ -152,12 +140,7 @@
         },
 
         _getComponentBinder: function (matchedEl) {
-            var componentBinderCount;
-            for (componentBinderCount = 0; componentBinderCount < this._componentBinders; componentBinderCount++) {
-                if (this._componentBinders[componentBinderCount].isResponsibleFor(matchedEl)) {
-                    return this._componentBinders[componentBinderCount];
-                }
-            }
+            return Backbone.ComponentBinder.GetComponentBinder(matchedEl);
         },
 
         // If the bindings are not specified, the default binding is performed on the specified attribute, name by default
