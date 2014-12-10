@@ -22,9 +22,13 @@
         throw 'Please include Backbone.js before Backbone.ModelBinder.js';
     }
 
-    Backbone.ComponentBinder = function (el) {
+    Backbone.ComponentBinder = function (el, options) {
         _.bindAll.apply(_, [this].concat(_.functions(this)));
         this._el = el;
+        this._options = options;
+        if (!this._options) {
+            this._options = {};
+        }
     };
 
     var _componentBinders = Backbone.ComponentBinder._componentBinders = [];
@@ -37,11 +41,12 @@
     };
 
     // static function to get a component binder instance that is responsible for the given jquery element
-    Backbone.ComponentBinder.GetComponentBinder = function (el) {
+    Backbone.ComponentBinder.GetComponentBinder = function (el, options) {
         var componentBinderCount;
         for (componentBinderCount = 0; componentBinderCount < _componentBinders.length; componentBinderCount++) {
-            if (_componentBinders[componentBinderCount].isResponsibleFor(el)) {
-                return _componentBinders[componentBinderCount];
+            var componentBinder = new _componentBinders[componentBinderCount](el, options);
+            if (componentBinder.isResponsible()) {
+                return componentBinder;
             }
         }
         return undefined;
@@ -54,7 +59,7 @@
         // initialization logic.
         initialize: function () {
         },
-        isResponsibleFor: function (el) {
+        isResponsible: function () {
             return false;
         },
         getValue: function () {

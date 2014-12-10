@@ -102,10 +102,6 @@
             if (!this._options['initialCopyDirection']) {
                 this._options['initialCopyDirection'] = Backbone.ModelBinder.Constants.ModelToView;
             }
-
-            if (!this._options['componentBinders']) {
-                this._options['componentBinders'] = []; //todo
-            }
         },
 
         // Converts the input bindings, which might just be empty or strings, to binding objects
@@ -140,7 +136,7 @@
         },
 
         _getComponentBinder: function (matchedEl) {
-            return Backbone.ComponentBinder.GetComponentBinder(matchedEl);
+            return Backbone.ComponentBinder.GetComponentBinder($(matchedEl), {language: navigator.language || navigator.userLanguage});
         },
 
         // If the bindings are not specified, the default binding is performed on the specified attribute, name by default
@@ -159,18 +155,28 @@
                 var componentBinder = this._getComponentBinder(matchedEl);
                 if (componentBinder) {
                     // use the component binder as attribute binding
-                    this._attributeBindings[name] = componentBinder;
+                    attributeBinding = {
+                        attributeName: name,
+                        elementBindings: [{componentBinding: componentBinder, boundEls: [matchedEl]}]
+                    };
+                    this._attributeBindings[name] = attributeBinding;
 
                 } else {
 
                     // For elements like radio buttons we only want a single attribute binding with possibly multiple element bindings
                     if (!this._attributeBindings[name]) {
-                        attributeBinding = {attributeName: name, elementBindings: [{attributeBinding: attributeBinding, boundEls: [matchedEl]}]};
+                        attributeBinding = {
+                            attributeName: name,
+                            elementBindings: [{attributeBinding: attributeBinding, boundEls: [matchedEl]}]
+                        };
 //                    attributeBinding.elementBindings = [{attributeBinding: attributeBinding, boundEls: [matchedEl]}];
                         this._attributeBindings[name] = attributeBinding;
                     }
                     else {
-                        this._attributeBindings[name].elementBindings.push({attributeBinding: this._attributeBindings[name], boundEls: [matchedEl]});
+                        this._attributeBindings[name].elementBindings.push({
+                            attributeBinding: this._attributeBindings[name],
+                            boundEls: [matchedEl]
+                        });
                     }
                 }
             }
@@ -373,12 +379,20 @@
             for (elementBindingCount = 0; elementBindingCount < attributeBinding.elementBindings.length; elementBindingCount++) {
                 elementBinding = attributeBinding.elementBindings[elementBindingCount];
 
-                for (boundElCount = 0; boundElCount < elementBinding.boundEls.length; boundElCount++) {
-                    boundEl = elementBinding.boundEls[boundElCount];
+                // check for component binding and let the component set the value itself
+                if (elementBinding.componentBinding) {
+                    elementBinding.componentBinding.initialize();   // todo: only once in the lifetime of the component
+                    elementBinding.componentBinding.setValue(value);
+                }
+                else {
 
-                    if (!boundEl._isSetting) {
-                        convertedValue = this._getConvertedValue(Backbone.ModelBinder.Constants.ModelToView, elementBinding, value);
-                        this._setEl($(boundEl), elementBinding, convertedValue);
+                    for (boundElCount = 0; boundElCount < elementBinding.boundEls.length; boundElCount++) {
+                        boundEl = elementBinding.boundEls[boundElCount];
+
+                        if (!boundEl._isSetting) {
+                            convertedValue = this._getConvertedValue(Backbone.ModelBinder.Constants.ModelToView, elementBinding, value);
+                            this._setEl($(boundEl), elementBinding, convertedValue);
+                        }
                     }
                 }
             }
