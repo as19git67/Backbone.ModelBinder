@@ -299,6 +299,10 @@
             }
         },
 
+        _onComponentChanged: function(event) {
+          // todo
+        },
+
         _isBindingUserEditable: function (elBinding) {
             return elBinding.elAttribute === undefined ||
                 elBinding.elAttribute === 'text' ||
