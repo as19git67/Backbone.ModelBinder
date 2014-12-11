@@ -299,8 +299,8 @@
             }
         },
 
-        _onComponentChanged: function(event) {
-          // todo
+        _onComponentChanged: function (event) {
+            // todo
         },
 
         _isBindingUserEditable: function (elBinding) {
@@ -386,6 +386,12 @@
                 // check for component binding and let the component set the value itself
                 if (elementBinding.componentBinding) {
                     elementBinding.componentBinding.initialize();   // todo: only once in the lifetime of the component
+                    elementBinding.componentBinding.on("change", function (sender, options) {
+                        console.log("DatePicker changed");
+                        var data = {};
+                        data[elementBinding.attributeName] = options.date;
+                        return this._model.set(data, this._options['modelSetOptions']);
+                    }, this);
                     elementBinding.componentBinding.setValue(value);
                 }
                 else {
