@@ -135,8 +135,8 @@
             }
         },
 
-        _getComponentBinder: function (matchedEl) {
-            return Backbone.ComponentBinder.GetComponentBinder($(matchedEl), {language: navigator.language || navigator.userLanguage});
+        _getComponentBinder: function (matchedEl, options) {
+            return Backbone.ComponentBinder.GetComponentBinder($(matchedEl), _.extend({language: navigator.language || navigator.userLanguage}, options));
         },
 
         // If the bindings are not specified, the default binding is performed on the specified attribute, name by default
@@ -152,8 +152,11 @@
                 name = $(matchedEl).attr(this._options['boundAttribute']);
 
                 // check if any component binder feels responsible for this element
-                var componentBinder = this._getComponentBinder(matchedEl);
+                var componentBinder = this._getComponentBinder(matchedEl, {attributeName: name});
                 if (componentBinder) {
+                    componentBinder.initialize();
+                    componentBinder.on("change", this._onComponentChanged, this);
+
                     // use the component binder as attribute binding
                     attributeBinding = {
                         attributeName: name,
@@ -299,8 +302,11 @@
             }
         },
 
-        _onComponentChanged: function (event) {
-            // todo
+        _onComponentChanged: function (sender, options) {
+            console.log("DatePicker for model attribute " + options.attributeName + " changed");
+            var data = {};
+            data[options.attributeName] = options.date;
+            return this._model.set(data, this._options['modelSetOptions']);
         },
 
         _isBindingUserEditable: function (elBinding) {
@@ -385,13 +391,6 @@
 
                 // check for component binding and let the component set the value itself
                 if (elementBinding.componentBinding) {
-                    elementBinding.componentBinding.initialize();   // todo: only once in the lifetime of the component
-                    elementBinding.componentBinding.on("change", function (sender, options) {
-                        console.log("DatePicker changed");
-                        var data = {};
-                        data[elementBinding.attributeName] = options.date;
-                        return this._model.set(data, this._options['modelSetOptions']);
-                    }, this);
                     elementBinding.componentBinding.setValue(value);
                 }
                 else {
