@@ -65,18 +65,20 @@
         getValue: function () {
             return this.el.val();
         },
+        handleModelChanged: function (model, attributeName) {
+        },
         setValue: function (value) {
-            var oldValue = this.el.val();
-            this.el.val(value);
+            var oldValue = this._el.val();
+            this._el.val(value);
             if (oldValue != value) {
                 this.trigger('change', this);
             }
         },
         enable: function () {
-            this.el.prop('disabled', false);
+            this._el.prop('disabled', false);
         },
         disable: function () {
-            this.el.prop('disabled', true);
+            this._el.prop('disabled', true);
         }
     });
 

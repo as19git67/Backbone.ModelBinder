@@ -391,7 +391,7 @@
 
                 // check for component binding and let the component set the value itself
                 if (elementBinding.componentBinding) {
-                    elementBinding.componentBinding.setValue(value);
+                    elementBinding.componentBinding.handleModelChanged(this._model, attributeBinding.attributeName);
                 }
                 else {
 
